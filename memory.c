@@ -181,9 +181,11 @@ void *calloc(size_t nmemb, size_t size) {
 }
 
 void *realloc(void *ptr, size_t size) {
-    printf("# %s(%p, %zd)\n", __FUNCTION__, ptr, size); delay(100000000);
-    size_t *mem = (size_t *)ptr;
-    size_t old = mem[-1];
+    printf("# %s(%p, %zd)\n", __FUNCTION__, ptr, size);
+    delay(100000000);
+    Chunk *chunk = (Chunk*)((intptr_t)ptr - HEADER_SIZE);
+    size_t old = memory_chunk_size(chunk);
+    printf("  old = %zd\n", old);
     if (old >= size) {
 	return ptr;
     } else {
