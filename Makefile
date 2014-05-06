@@ -62,7 +62,7 @@ include $(wildcard *.d) $(wildcard test/*.d)
 
 QEMU = ../../qemu/install/bin/qemu-system-arm
 test:
-	$(QEMU) -kernel kernel.elf -cpu arm1176 -m 512 -M raspi -serial stdio -device usb-kbd
+	$(QEMU) -kernel kernel.elf -initrd kernel.elf -cpu arm1176 -m 512 -M raspi -serial stdio -device usb-kbd
 
 tests: test/list test/memory
 

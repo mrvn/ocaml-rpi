@@ -94,7 +94,11 @@ void kernel_main(int zero, int model, void *atags) {
     // delay(100000000);
 
     printf("_end = %p\n", _end);
-    memory_init(_end, 1024*1024*200);
+    printf("model = %#x [expected 0xc42]\n", model);
+    printf("atags @ %p\n", atags);
+    uint32_t mem_size = ((uint32_t*)atags)[7];
+    printf("memory size = %#x\n", mem_size);
+    memory_init(_end, mem_size - ((intptr_t)_end - 0xC0000000));
     {
 	char c;
 	printf("# stack = %p\n", &c);
@@ -117,9 +121,7 @@ void kernel_main(int zero, int model, void *atags) {
 
     test_strtol();
     
-    printf("model = %d\n", model);
-    printf("atags @ %p\n", atags);
-    // delay(100000000);
+    //delay(100000000);
     caml_startup(argv);
     // delay(100000000);
     panic("all done\n");
