@@ -187,6 +187,7 @@ void *realloc(void *ptr, size_t size) {
     size_t old = memory_chunk_size(chunk);
     printf("  old = %zd\n", old);
     if (old >= size) {
+	printf("### WARNING: %s(): no shrinking\n", __FUNCTION__);
 	return ptr;
     } else {
 	void *res = malloc(size);
