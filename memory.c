@@ -22,6 +22,10 @@
 // #include <stdio.h>
 #include <stdint.h>
 #include "list.h"
+#include "printf.h"
+#include "string.h"
+
+void delay(uint32_t);
 
 typedef struct Chunk Chunk;
 struct Chunk {
@@ -71,11 +75,9 @@ int memory_chunk_slot(size_t size) {
 }
 
 void memory_init(void *mem, size_t size) {
-    char *mem_start = (char *)(((intptr_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
-    char *mem_end = (char *)(((intptr_t)mem + size) & (~(ALIGN - 1)));
-    first = (Chunk*)mem_start;
+    first = (Chunk*)(((intptr_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
+    last = ((Chunk*)(((intptr_t)mem + size) & (~(ALIGN - 1)))) - 1;
     Chunk *second = first + 1;
-    last = ((Chunk*)mem_end) - 1;
     memory_chunk_init(first);
     memory_chunk_init(second);
     memory_chunk_init(last);
@@ -94,7 +96,7 @@ void memory_init(void *mem, size_t size) {
 }
 
 void *malloc(size_t size) {
-//    printf("%s(%#zx)\n", __FUNCTION__, size);
+    printf("%s(%#zx)\n", __FUNCTION__, size);
     size = (size + ALIGN - 1) & (~(ALIGN - 1));
     if (size < MIN_SIZE) size = MIN_SIZE;
     int n = memory_chunk_slot(size - 1) + 1;
@@ -108,11 +110,11 @@ void *malloc(size_t size) {
 //    printf("@ %p [%#zx]\n", chunk, size2);
     size_t len = 0;
     if (size + sizeof(Chunk) <= size2) {
-	Chunk *chunk2 = (Chunk*)(((char*)chunk) + HEADER_SIZE + size);
+	Chunk *chunk2 = (Chunk*)((intptr_t)chunk + HEADER_SIZE + size);
 	memory_chunk_init(chunk2);
 	dlist_insert_after(&chunk->all, &chunk2->all);
 	len = memory_chunk_size(chunk2);
-	int n = memory_chunk_slot(len);
+	n = memory_chunk_slot(len);
 //	printf("  adding chunk @ %p %#zx [%d]\n", chunk2, len, n);
 	DLIST_PUSH(&free_chunk[n], chunk2, free);
 	mem_meta += HEADER_SIZE;
@@ -121,7 +123,7 @@ void *malloc(size_t size) {
     chunk->used = 1;
     mem_free -= size2;
     mem_used += size2 - len - HEADER_SIZE;
-//    printf("  = %p [%p]\n", chunk->data, chunk);
+    printf("  = %p [%p]\n", chunk->data, chunk);
     return chunk->data;
 }
 
@@ -143,10 +145,10 @@ void push_free(Chunk *chunk) {
 
 void free(void *mem) {
     if (mem == NULL) return;
-    Chunk *chunk = (Chunk*)((char*)mem - HEADER_SIZE);
+    Chunk *chunk = (Chunk*)((intptr_t)mem - HEADER_SIZE);
     Chunk *next = CONTAINER(Chunk, all, chunk->all.next);
     Chunk *prev = CONTAINER(Chunk, all, chunk->all.prev);
-//    printf("%s(%p): @%p %#zx [%d]\n", __FUNCTION__, mem, chunk, memory_chunk_size(chunk), memory_chunk_slot(memory_chunk_size(chunk)));
+    printf("%s(%p): @%p %#zx [%d]\n", __FUNCTION__, mem, chunk, memory_chunk_size(chunk), memory_chunk_slot(memory_chunk_size(chunk)));
     mem_used -= memory_chunk_size(chunk);
     if (next->used == 0) {
 	// merge in next
@@ -167,5 +169,27 @@ void free(void *mem) {
 	chunk->used = 0;
 	DLIST_INIT(chunk, free);
 	push_free(chunk);
+    }
+}
+
+void *calloc(size_t nmemb, size_t size) {
+    // printf("# %s(%zd, %zd)\n", __FUNCTION__, nmemb, size); // delay(100000000);
+    size = nmemb * size;
+    void *res = malloc(size);
+    memset(res, 0, size);
+    return res;
+}
+
+void *realloc(void *ptr, size_t size) {
+    printf("# %s(%p, %zd)\n", __FUNCTION__, ptr, size); delay(100000000);
+    size_t *mem = (size_t *)ptr;
+    size_t old = mem[-1];
+    if (old >= size) {
+	return ptr;
+    } else {
+	void *res = malloc(size);
+	memcpy(res, ptr, old);
+	free(ptr);
+	return res;
     }
 }

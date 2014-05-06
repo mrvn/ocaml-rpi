@@ -42,7 +42,7 @@ ocaml.o: Thread.ml Time.ml foo.ml
 #	ocamlopt -output-obj -o $@ -thread unix.cmxa threads.cmxa $+
 	ocamlopt -output-obj -o $@ $+
 
-kernel.elf: boot.o entry.o uart.o printf.o main.o Thread_stubs.o Time_stubs.o ocaml.o
+kernel.elf: boot.o entry.o uart.o printf.o string.o memory.o main.o Thread_stubs.o Time_stubs.o ocaml.o
 #	$(CC) -nostdlib -ffreestanding -o $@ $+ -L/usr/lib/ocaml -lasmrun
 #	$(CC) -o $@ $+ -L/usr/lib/ocaml -lasmrun
 	$(CC) $(LDFLAGS) -Tlink-arm-eabi.ld -o $@ $+ -L/usr/lib/ocaml -lasmrun -lunix -L . -lgcc
@@ -55,11 +55,12 @@ kernel.elf: boot.o entry.o uart.o printf.o main.o Thread_stubs.o Time_stubs.o oc
 
 clean:
 	rm -f *.o *.cmx *.cmi *.elf *.img *.symbols *~
+	rm -f test/liist test/memory
 
 # Include depends
-include $(wildcard *.d)
+include $(wildcard *.d) $(wildcard test/*.d)
 
-QEMU = ../qemu/install/bin/qemu-system-arm
+QEMU = ../../qemu/install/bin/qemu-system-arm
 test:
 	$(QEMU) -kernel kernel.elf -cpu arm1176 -m 512 -M raspi -serial stdio -device usb-kbd
 
@@ -67,3 +68,5 @@ tests: test/list test/memory
 
 test/%: test/%.c
 	$(CC) -std=gnu99 -O2 -W -Wall -Wextra -Werror -g -MD -MP -MT $@ -MF $@.d -o $@ $+
+
+.PHONY: test

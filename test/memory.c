@@ -25,6 +25,7 @@
 #include <string.h>
 #include <assert.h>
 
+#define OCAML_RPI__STRING_H
 #include "../memory.c"
 
 #define MEM_SIZE (1024*1024*1024)
@@ -34,6 +35,10 @@ char MEM[MEM_SIZE] = { 0 };
 #define NUM_SLOTS 1024
 void *slot[NUM_SLOTS] = { NULL };
 size_t slot_size[NUM_SLOTS] = { 0 };
+
+void delay(uint32_t count) {
+    (void)count;
+}
 
 void check(void) {
     Chunk *t = last;

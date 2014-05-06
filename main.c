@@ -4,6 +4,8 @@
 
 #include "uart.h"
 #include "printf.h"
+#include "string.h"
+#include "memory.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -28,6 +30,11 @@ void kernel_constructors(void) {
         (*fn)();
     }
 }
+
+// memory
+//extern char *_end;
+//void *end = (void*)(((char*)&_end) + 4);
+extern void *_end[];
 
 // entry.S
 extern uint32_t exception_table[];
@@ -86,6 +93,8 @@ void kernel_main(int zero, int model, void *atags) {
     puts("\n# uart initialized\n");
     // delay(100000000);
 
+    printf("_end = %p\n", _end);
+    memory_init(_end, 1024*1024*200);
     {
 	char c;
 	printf("# stack = %p\n", &c);
@@ -313,88 +322,6 @@ ssize_t read(int fd, void *buf, size_t count) {
     return -1;
 }
 
-// memory
-extern char *_end;
-void *end = (void*)(((char*)&_end) + 4);
-
-void *malloc(size_t size) {
-    puts("# "); puts(__FUNCTION__); puts("()\n"); // delay(100000000);
-    size_t *res = (size_t *)end;
-    size = (size + 7) & (~7);
-    end = (void *)((char *)end + size + sizeof(size_t) * 2);
-    *res++ = size;
-    printf("# %s(%zd) = %p\n", __FUNCTION__, size, res);
-    return res;
-}
-
-void free(void *ptr) {
-    UNUSED(ptr);
-    puts("# "); puts(__FUNCTION__); puts("()\n"); // delay(100000000);
-}
-
-
-void *memmove(void *dest, const void *src, size_t n) {
-    // puts("# "); puts(__FUNCTION__); puts("()\n"); // delay(100000000);
-    char *d = (char *)dest;
-    const char *s = (const char *)src;
-    if (d < s || (size_t)(d - s) >= n) {
-	while(n-- > 0) *d++ = *s++;
-    } else {
-	d += n;
-	s += n;
-	while(n-- > 0) *--d = *--s;
-    }
-    return dest;
-}
-
-void *memcpy(void *dest, const void *src, size_t n) {
-    puts("# "); puts(__FUNCTION__); puts("()\n"); delay(100000000);
-    char *d = (char *)dest;
-    const char *s = (const char *)src;
-    while(n-- > 0) *d++ = *s++;
-    return dest;
-}
-
-void *memset(void *s, int c, size_t n) {
-    puts("# "); puts(__FUNCTION__); puts("()\n"); // delay(100000000);
-    char *p = (char *)s;
-    while(n-- > 0) *p++ = c;
-    return s;
-}
-
-int memcmp(const void *s1, const void *s2, size_t n) {
-    puts("# "); puts(__FUNCTION__); puts("()\n"); delay(100000000);
-    const char *p = (const char *)s1;
-    const char *q = (const char *)s2;
-    int t = 0;
-    while(t == 0 && n-- > 0) {
-	t = *p++ - *q++;
-    }
-    return t;
-}
-
-void *calloc(size_t nmemb, size_t size) {
-    puts("# "); puts(__FUNCTION__); puts("()\n"); // delay(100000000);
-    size = nmemb * size;
-    void *res = malloc(size);
-    memset(res, 0, size);
-    return res;
-}
-
-void *realloc(void *ptr, size_t size) {
-    puts("# "); puts(__FUNCTION__); puts("()\n"); delay(100000000);
-    size_t *mem = (size_t *)ptr;
-    size_t old = mem[-1];
-    if (old >= size) {
-	return ptr;
-    } else {
-	void *res = malloc(size);
-	memcpy(res, ptr, old);
-	free(ptr);
-	return res;
-    }
-}
-
 // exit
 void __attribute__((noreturn)) exit(int status) {
     UNUSED(status);
@@ -614,38 +541,6 @@ int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
     UNUSED(set);
     UNUSED(oldset);
     return -1;
-}
-
-// string
-char *strcat(char *dest, const char *src) {
-    puts("# "); puts(__FUNCTION__); puts("()\n"); delay(100000000);
-    char *p = dest;
-    while(*p++);
-    while(*src) { *p++ = *src++; }
-    return dest;
-}
-
-int strcmp(const char *s1, const char *s2) {
-    puts("# "); puts(__FUNCTION__); puts("()\n"); delay(100000000);
-    int t = 0;
-    while(t != 0 && *s1) {
-	t = (*s1++) - (*s2++);
-    }
-    return t;
-}
-
-char *strcpy(char *dest, const char *src) {
-    puts("# "); puts(__FUNCTION__); puts("()\n"); // delay(100000000);
-    char *p = dest;
-    while(*src) *p++ = *src++;
-    return dest;
-}
-
-size_t strlen(const char *s) {
-    // puts("# "); puts(__FUNCTION__); puts("()\n"); // delay(100000000);
-    size_t res = 0;
-    while(*s++) ++res;
-    return res;
 }
 
 double strtod(const char *nptr, char **endptr) {
