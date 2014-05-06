@@ -143,15 +143,15 @@ char* sprint_int(char* buf, char* end, uint64_t num, int base, int width, int pr
 	buf_add(flags.space ? ' ' : '+');
     }
 
-    // Pad with ' ' if not left aligned
-    if (!flags.left) {
-	while(precision < width--) buf_add(flags.zeropad ? '0' : ' ');
-    }
-
     // Put 0x prefix
     if (flags.alternate) {
 	buf_add('0');
 	buf_add('x');
+    }
+
+    // Pad with ' ' if not left aligned
+    if (!flags.left) {
+	while(precision < width--) buf_add(flags.zeropad ? '0' : ' ');
     }
 
     // Pad with ' ' or '0' to precision
