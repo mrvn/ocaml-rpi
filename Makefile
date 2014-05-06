@@ -38,11 +38,11 @@ all: kernel.img kernel.symbols tests
 %.o: %.c
 	$(CC) $(CFLAGS) -MT $@ -MF $@.d -c $< -o $@
 
-ocaml.o: Thread.ml Time.ml foo.ml
+ocaml.o: Thread.ml Time.ml Framebuffer.ml foo.ml
 #	ocamlopt -output-obj -o $@ -thread unix.cmxa threads.cmxa $+
 	ocamlopt -output-obj -o $@ $+
 
-kernel.elf: boot.o entry.o uart.o printf.o string.o memory.o main.o Thread_stubs.o Time_stubs.o ocaml.o
+kernel.elf: boot.o entry.o uart.o printf.o string.o memory.o main.o Thread_stubs.o Time_stubs.o Framebuffer_stubs.o ocaml.o
 #	$(CC) -nostdlib -ffreestanding -o $@ $+ -L/usr/lib/ocaml -lasmrun
 #	$(CC) -o $@ $+ -L/usr/lib/ocaml -lasmrun
 	$(CC) $(LDFLAGS) -Tlink-arm-eabi.ld -o $@ $+ -L/usr/lib/ocaml -lasmrun -lunix -L . -lgcc
