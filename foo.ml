@@ -46,8 +46,8 @@ let t = Thread.create (fun () -> loop 1)
 
 let rec loop3 n =
   Printf.printf "[%s] loop3 %d\n%!" (Time.to_string (Time.time ())) n;
-(*
   Thread.yield ();
+(*
   Gc.major ();
   Gc.compact ();
 *)  let stat = Gc.stat ()
