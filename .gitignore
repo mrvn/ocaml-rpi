@@ -21,3 +21,18 @@
 *.i*86
 *.x86_64
 *.hex
+*.img
+*.symbols
+test/list
+test/memory
+
+# Ocaml files
+*.cmi
+*.cmo
+*.cmx
+
+# Depends files
+*.d
+
+# Backup files
+*~
