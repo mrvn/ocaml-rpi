@@ -67,6 +67,6 @@ test:
 tests: test/list test/memory
 
 test/%: test/%.c
-	$(CC) -std=gnu99 -O2 -W -Wall -Wextra -Werror -g -MD -MP -MT $@ -MF $@.d -o $@ $+
+	$(CC) -std=gnu99 -O2 -W -Wall -Wextra -Werror -g -MD -MP -MT $@ -MF $@.d -o $@ $<
 
 .PHONY: test
