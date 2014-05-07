@@ -55,7 +55,7 @@ kernel.elf: boot.o entry.o uart.o printf.o string.o memory.o main.o Thread_stubs
 
 clean:
 	rm -f *.o *.cmx *.cmi *.elf *.img *.symbols *~
-	rm -f test/liist test/memory
+	rm -f test/list test/memory
 
 # Include depends
 include $(wildcard *.d) $(wildcard test/*.d)
