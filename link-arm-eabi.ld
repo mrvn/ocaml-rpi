@@ -23,7 +23,8 @@ VIRT_BASE = 0xC0000000;
 SECTIONS
 {
     /* Starts at LOADER_ADDR. */
-    . = 0xC0010000;
+    /* . = 0xC0010000; */
+    . = 0xC0008000;
     _start = .;
     _text_start = .;
     .text : AT(ADDR(.text) - VIRT_BASE) {
